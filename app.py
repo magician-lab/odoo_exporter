@@ -1314,6 +1314,208 @@ def catalogue_download():
 
 
 # =========================================================
+# SALES REPORT
+# =========================================================
+
+_SALES_REPORT_CACHE = {"ts": 0.0, "data": None}
+SALES_REPORT_CACHE_TTL = 300.0
+
+
+def fetch_sales_lines():
+    now = time.time()
+    if _SALES_REPORT_CACHE["data"] and now - _SALES_REPORT_CACHE["ts"] < SALES_REPORT_CACHE_TTL:
+        return _SALES_REPORT_CACHE["data"]
+
+    pos_line_fields = get_valid_model_fields("pos.order.line", ["id", "product_id", "qty", "price_subtotal", "order_id"])
+    pos_order_fields = get_valid_model_fields("pos.order", ["id", "date_order", "state"])
+    so_line_fields = get_valid_model_fields("sale.order.line", ["id", "product_id", "product_uom_qty", "price_total", "order_id"])
+    so_order_fields = get_valid_model_fields("sale.order", ["id", "date_order", "state"])
+    variant_fields = get_valid_model_fields("product.product", ["id", "display_name", "name", "product_tmpl_id"])
+    template_fields = get_valid_model_fields("product.template", ["id", "name", "categ_id"])
+
+    pos_lines = search_read("pos.order.line", pos_line_fields)
+    pos_orders = {o["id"]: o for o in search_read("pos.order", pos_order_fields)}
+    so_lines = search_read("sale.order.line", so_line_fields)
+    so_orders = {o["id"]: o for o in search_read("sale.order", so_order_fields)}
+    variants = {v["id"]: v for v in search_read("product.product", variant_fields)}
+    templates = {t["id"]: t for t in search_read("product.template", template_fields)}
+
+    lines = []
+    counts = {"pos": 0, "so": 0}
+
+    def _fold(lines_raw, orders, ok_states, qty_field, rev_field, channel):
+        for line in lines_raw:
+            pid_ref = line.get("product_id")
+            if not pid_ref:
+                continue
+            order = None
+            oid = line.get("order_id")
+            if oid:
+                order = orders.get(oid[0])
+            if not order or order.get("state") not in ok_states:
+                continue
+            date_str = str(order.get("date_order") or "")
+            if not date_str:
+                continue
+            variant = variants.get(pid_ref[0]) or {}
+            tid_ref = variant.get("product_tmpl_id")
+            tid = tid_ref[0] if tid_ref else None
+            template = templates.get(tid) or {}
+            lines.append({
+                "id": line.get("id"),
+                "product_id": pid_ref[0],
+                "template_id": tid,
+                "product_name": variant.get("display_name") or variant.get("name") or "",
+                "template_name": template.get("name") or "",
+                "category": template.get("categ_id")[1] if template.get("categ_id") else "",
+                "qty": float(line.get(qty_field) or 0),
+                "revenue": float(line.get(rev_field) or 0),
+                "date": date_str[:10],
+                "month": date_str[:7],
+                "channel": channel,
+                "order_id": order["id"],
+            })
+
+    _fold(pos_lines, pos_orders, POS_OK_STATES, "qty", "price_subtotal", "POS")
+    counts["pos"] = len(pos_lines)
+    _fold(so_lines, so_orders, SO_OK_STATES, "product_uom_qty", "price_total", "Sales Order")
+    counts["so"] = len(so_lines)
+
+    lines.sort(key=lambda x: x["date"])
+    months = []
+    seen = set()
+    for l in lines:
+        if l["month"] not in seen:
+            seen.add(l["month"])
+            months.append(l["month"])
+
+    result = {"lines": lines, "months": months, "counts": counts}
+    _SALES_REPORT_CACHE["ts"] = now
+    _SALES_REPORT_CACHE["data"] = result
+    return result
+
+
+def build_sales_payload(month=None):
+    data = fetch_sales_lines()
+    lines = data["lines"]
+    months_sorted = data["months"]
+    latest = months_sorted[-1] if months_sorted else None
+
+    if month is None or (month not in months_sorted and month != "all"):
+        month = latest or "all"
+
+    monthly = defaultdict(lambda: {"revenue": 0.0, "units": 0.0, "orders": set()})
+    for l in lines:
+        m = monthly[l["month"]]
+        m["revenue"] += l["revenue"]
+        m["units"] += l["qty"]
+        m["orders"].add((l["channel"], l["order_id"]))
+
+    selected = lines if month == "all" else [l for l in lines if l["month"] == month]
+
+    products = {}
+    for l in lines:
+        key = l["template_id"] or ("v%d" % l["product_id"])
+        p = products.get(key)
+        if p is None:
+            p = {
+                "key": key, "template_id": l["template_id"],
+                "name": l["template_name"] or l["product_name"],
+                "category": l["category"],
+                "first_sale": l["date"], "last_sale": l["date"],
+                "monthly": defaultdict(lambda: {"revenue": 0.0, "units": 0.0}),
+                "channels": defaultdict(lambda: {"revenue": 0.0, "units": 0.0}),
+                "variants": defaultdict(lambda: {"name": "", "revenue": 0.0, "units": 0.0}),
+            }
+            products[key] = p
+        p["first_sale"] = min(p["first_sale"], l["date"])
+        p["last_sale"] = max(p["last_sale"], l["date"])
+        p["monthly"][l["month"]]["revenue"] += l["revenue"]
+        p["monthly"][l["month"]]["units"] += l["qty"]
+        p["channels"][l["channel"]]["revenue"] += l["revenue"]
+        p["channels"][l["channel"]]["units"] += l["qty"]
+        p["variants"][l["product_id"]]["name"] = l["product_name"]
+        p["variants"][l["product_id"]]["revenue"] += l["revenue"]
+        p["variants"][l["product_id"]]["units"] += l["qty"]
+
+    sel_products = defaultdict(lambda: {"revenue": 0.0, "units": 0.0, "orders": set()})
+    channel_totals = defaultdict(lambda: {"revenue": 0.0, "units": 0.0, "orders": set()})
+    date_lines = defaultdict(lambda: defaultdict(lambda: {"name": "", "units": 0.0, "revenue": 0.0}))
+    kpi_orders = set()
+    for l in selected:
+        key = l["template_id"] or ("v%d" % l["product_id"])
+        sp = sel_products[key]
+        sp["revenue"] += l["revenue"]
+        sp["units"] += l["qty"]
+        sp["orders"].add((l["channel"], l["order_id"]))
+        ch = channel_totals[l["channel"]]
+        ch["revenue"] += l["revenue"]
+        ch["units"] += l["qty"]
+        ch["orders"].add((l["channel"], l["order_id"]))
+        kpi_orders.add((l["channel"], l["order_id"]))
+        cell = date_lines[key][(l["date"], l["product_id"])]
+        cell["name"] = l["product_name"]
+        cell["units"] += l["qty"]
+        cell["revenue"] += l["revenue"]
+
+    product_rows = []
+    for key, p in products.items():
+        sp = sel_products.get(key)
+        if not sp or not sp["orders"]:
+            continue
+        monthly_bd = [{"month": m, "revenue": round(d["revenue"], 2), "units": round(d["units"], 2)} for m, d in sorted(p["monthly"].items())]
+        channel_bd = [{"name": n, "revenue": round(d["revenue"], 2), "units": round(d["units"], 2)} for n, d in sorted(p["channels"].items(), key=lambda kv: -kv[1]["revenue"])]
+        variants = sorted([{"name": v["name"] or vid, "revenue": round(v["revenue"], 2), "units": round(v["units"], 2)} for vid, v in p["variants"].items()], key=lambda x: -x["revenue"])
+        sales_by_date = sorted([{"date": d, "product": cell["name"], "units": round(cell["units"], 2), "revenue": round(cell["revenue"], 2)} for (d, _pid), cell in date_lines.get(key, {}).items()], key=lambda x: (x["date"], x["product"]))
+        product_rows.append({
+            "key": key, "template_id": p["template_id"], "name": p["name"],
+            "category": p["category"] or "Uncategorized",
+            "revenue": round(sp["revenue"], 2), "units": round(sp["units"], 2),
+            "orders": len(sp["orders"]),
+            "avg_price": round(sp["revenue"] / sp["units"], 2) if sp["units"] else None,
+            "first_sale": p["first_sale"], "last_sale": p["last_sale"],
+            "channel_breakdown": channel_bd, "monthly_breakdown": monthly_bd,
+            "variants": variants, "sales_by_date": sales_by_date,
+        })
+    product_rows.sort(key=lambda x: -x["revenue"])
+
+    trend = [{"month": m, "revenue": round(monthly[m]["revenue"], 2), "units": round(monthly[m]["units"], 2), "orders": len(monthly[m]["orders"])} for m in months_sorted]
+
+    kpi_revenue = sum(sp["revenue"] for sp in sel_products.values())
+    kpi_units = sum(sp["units"] for sp in sel_products.values())
+    categories = {p["category"] for p in product_rows}
+
+    return {
+        "month": month, "months": months_sorted,
+        "kpis": {
+            "revenue": round(kpi_revenue, 2), "units": round(kpi_units, 2),
+            "orders": len(kpi_orders), "products": len(product_rows),
+            "lines": len(selected), "categories": len(categories),
+            "avg_order_value": round(kpi_revenue / len(kpi_orders), 2) if kpi_orders else 0.0,
+        },
+        "channels": [{"name": n, "revenue": round(d["revenue"], 2), "units": round(d["units"], 2), "orders": len(d["orders"])} for n, d in sorted(channel_totals.items(), key=lambda kv: -kv[1]["revenue"])],
+        "monthly_trend": trend,
+        "products": product_rows,
+        "fetch_health": {"lines": len(lines), "pos_lines": data["counts"]["pos"], "so_lines": data["counts"]["so"]},
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+    }
+
+
+@app.route("/sales")
+def sales_page():
+    return render_template("sales/report.html")
+
+
+@app.route("/api/sales")
+def api_sales():
+    if request.args.get("refresh") == "1":
+        _FIELDS_CACHE.clear()
+        _SALES_REPORT_CACHE["ts"] = 0.0
+        _SALES_REPORT_CACHE["data"] = None
+    return jsonify(build_sales_payload(request.args.get("month")))
+
+
+# =========================================================
 # RUN
 # =========================================================
 if __name__ == "__main__":
