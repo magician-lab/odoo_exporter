@@ -747,43 +747,44 @@ def build_rows(include_images=False):
 
 
 def apply_filters(rows):
-    issue = request.args.get("issue")
-    search = request.args.get("search")
-    location = request.args.get("location")
-    category = request.args.get("category")
-    type_filter = request.args.get("type")
-    ptype_filter = request.args.get("ptype")
-    status = request.args.get("status")
-    min_margin = request.args.get("min_margin")
-    abc = request.args.get("abc")
-    has_sales = request.args.get("has_sales")
-    min_stock = request.args.get("min_stock")
-    max_stock = request.args.get("max_stock")
+    issue = request.args.get("issue", "").strip()
+    search = request.args.get("search", "").strip()
+    location = request.args.get("location", "").strip()
+    category = request.args.get("category", "").strip()
+    type_filter = request.args.get("type", "").strip()
+    ptype_filter = request.args.get("ptype", "").strip()
+    status = request.args.get("status", "").strip()
+    min_margin = request.args.get("min_margin", "").strip()
+    abc = request.args.get("abc", "").strip()
+    has_sales = request.args.get("has_sales", "").strip()
+    min_stock = request.args.get("min_stock", "").strip()
+    max_stock = request.args.get("max_stock", "").strip()
 
     if issue:
-        rows = [r for r in rows if issue in r.get("defects", [])]
+        rows = [r for r in rows if issue in (r.get("defects") or [])]
     if search:
         s = search.lower()
         rows = [r for r in rows if s in (r.get("name") or "").lower()
                 or s in (r.get("variant_of") or "").lower()
-                or s in (r.get("category") or "").lower()]
+                or s in (r.get("category") or "").lower()
+                or s in (r.get("status") or "").lower()]
     if location:
-        rows = [r for r in rows if any(str(loc.get("id")) == str(location) for loc in r.get("locations", []))]
+        rows = [r for r in rows if any(str(loc.get("id")) == str(location) for loc in (r.get("locations") or []))]
     if category:
-        rows = [r for r in rows if r.get("category") == category]
+        rows = [r for r in rows if (r.get("category") or "") == category]
     if type_filter:
-        rows = [r for r in rows if r.get("type") == type_filter.upper()]
+        rows = [r for r in rows if (r.get("type") or "").upper() == type_filter.upper()]
     if ptype_filter:
-        rows = [r for r in rows if r.get("product_type") == ptype_filter]
+        rows = [r for r in rows if (r.get("product_type") or "") == ptype_filter]
     if status:
         if status.upper() == "GOOD":
             rows = [r for r in rows if r.get("status") == "GOOD"]
         elif status.upper() == "ISSUES":
-            rows = [r for r in rows if r.get("status") != "GOOD"]
+            rows = [r for r in rows if r.get("status") and r.get("status") != "GOOD"]
     if min_margin:
         try:
             mm = float(min_margin)
-            rows = [r for r in rows if r.get("margin") is not None and r["margin"] < mm]
+            rows = [r for r in rows if r.get("margin") is not None and r["margin"] >= mm]
         except ValueError:
             pass
     if abc:

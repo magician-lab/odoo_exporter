@@ -568,9 +568,15 @@ function renderVariants(tid){
 // ---------------- EVENTS ----------------
 function reloadAll(){ loadProducts(); }
 
+const FILTER_MAP = {
+    fCategory:"category", fLocation:"location", fPtype:"ptype", fType:"type",
+    fStatus:"status", fIssue:"issue", fAbc:"abc", fMinStock:"min_stock",
+    fMaxStock:"max_stock", fMinMargin:"min_margin"
+};
+
 $("fSearch").addEventListener("input", debounce(()=>{state.search=$("fSearch").value.trim();state.page=1;loadProducts();},300));
-["fCategory","fLocation","fPtype","fType","fStatus","fIssue","fAbc","fMinStock","fMaxStock","fMinMargin"].forEach(id=>{
-    $(id).addEventListener("change", ()=>{ state[id.slice(1)] = $(id).value; state.page=1; loadProducts(); });
+Object.keys(FILTER_MAP).forEach(id=>{
+    $(id).addEventListener("change", ()=>{ state[FILTER_MAP[id]] = $(id).value; state.page=1; loadProducts(); });
 });
 $("fSales").addEventListener("change", ()=>{ state.has_sales=$("fSales").checked; state.page=1; loadProducts(); });
 $("fSort").addEventListener("change", ()=>{ state.sort=$("fSort").value; state.page=1; renderTable(); });
