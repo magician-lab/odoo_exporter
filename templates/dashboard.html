@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Odoo Product Intelligence</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+    --bg:#f1f5f9; --card:#ffffff; --ink:#0f172a; --muted:#64748b;
+    --brand:#2563eb; --brand-dark:#1d4ed8; --green:#16a34a; --red:#dc2626;
+    --amber:#d97706; --border:#e2e8f0;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header.top{
+    background:linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#2563eb 130%);
+    color:#fff;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;
+    gap:16px;flex-wrap:wrap;
+}
+header.top h1{margin:0;font-size:22px;letter-spacing:.3px}
+header.top h1 small{display:block;font-size:12px;font-weight:400;color:#94a3b8;margin-top:3px}
+.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;
+    font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:.15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.btn-blue{background:var(--brand);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.btn-dark{background:#334155;color:#fff}
+.conn{display:flex;align-items:center;gap:7px;font-size:12px;color:#a5f3fc;background:rgba(0,0,0,.25);
+    padding:7px 12px;border-radius:20px}
+.conn .dot{width:9px;height:9px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;padding:22px 28px 6px}
+.kpi{background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.07);
+    border:1px solid var(--border);border-top:3px solid var(--brand);cursor:pointer;transition:.15s}
+.kpi:hover{box-shadow:0 6px 18px rgba(0,0,0,.10);transform:translateY(-2px)}
+.kpi .icon{font-size:18px}
+.kpi .value{font-size:27px;font-weight:800;margin-top:2px;color:var(--ink)}
+.kpi .label{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:2px}
+.kpi.green{border-top-color:var(--green)} .kpi.green .value{color:var(--green)}
+.kpi.red{border-top-color:var(--red)} .kpi.red .value{color:var(--red)}
+.kpi.amber{border-top-color:var(--amber)} .kpi.amber .value{color:var(--amber)}
+
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:14px;padding:20px 28px}
+.chart-card{background:var(--card);border-radius:14px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.07);
+    border:1px solid var(--border)}
+.chart-card h3{margin:0 0 10px;font-size:14px;color:var(--ink);display:flex;justify-content:space-between;align-items:center}
+.chart-card h3 .hint{font-size:11px;color:var(--muted);font-weight:500}
+.chart-wrap{position:relative;height:250px}
+
+.filters{background:var(--card);border-radius:14px;padding:16px 20px;margin:6px 28px 14px;
+    box-shadow:0 1px 3px rgba(0,0,0,.07);border:1px solid var(--border)}
+.filter-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.filter-item{flex:1;min-width:140px}
+.filter-item label{font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px}
+.filter-item input,.filter-item select{width:100%;padding:9px 11px;border:1px solid var(--border);
+    border-radius:9px;font-size:13px;outline:none;background:#fff;font-family:inherit}
+.filter-item input:focus,.filter-item select:focus{border-color:var(--brand)}
+.chk{display:flex;align-items:center;gap:7px;font-size:13px;padding:10px 0;cursor:pointer}
+.chk input{accent-color:var(--brand);width:15px;height:15px}
+
+.results-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:2px 28px 10px;flex-wrap:wrap}
+.results-bar .count{font-size:13px;color:var(--muted);font-weight:600}
+.results-bar .right{display:flex;gap:10px;align-items:center}
+.results-bar select{padding:8px 11px;border:1px solid var(--border);border-radius:9px;font-size:13px;background:#fff}
+
+.table-wrap{background:var(--card);border-radius:14px;margin:0 28px 30px;overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.07);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#1e293b;color:#fff;text-align:left;padding:11px 12px;font-size:12px;
+    font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;position:sticky;top:0;z-index:2}
+thead th:hover{background:#334155}
+thead th .arr{font-size:10px;color:#93c5fd;margin-left:4px}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tbody tr{cursor:pointer;transition:.1s}
+tbody tr:hover{background:#eff6ff}
+tbody tr:nth-child(even){background:#f8fafc}
+tbody tr:nth-child(even):hover{background:#eff6ff}
+td.num,th.num{text-align:right}
+td.money{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td .sub{font-size:11px;color:var(--muted)}
+.badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:700;margin:1px 2px;white-space:nowrap}
+.badge.green{background:#dcfce7;color:#15803d}
+.badge.red{background:#fee2e2;color:#b91c1c}
+.badge.amber{background:#fef9c3;color:#a16207}
+.badge.blue{background:#dbeafe;color:#1d4ed8}
+.badge.gray{background:#f1f5f9;color:#475569}
+.badge.purple{background:#ede9fe;color:#6d28d9}
+.status-good{color:#15803d;font-weight:700}
+.status-issue{color:#b91c1c;font-weight:600}
+.pager{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+.pager .pg{display:flex;gap:8px;align-items:center}
+.pager button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 12px;
+    cursor:pointer;font-size:13px;font-weight:600;color:var(--ink)}
+.pager button:disabled{opacity:.4;cursor:default}
+.pager button:hover:not(:disabled){background:var(--brand);color:#fff;border-color:var(--brand)}
+
+.drawer{position:fixed;top:0;right:-560px;width:540px;max-width:94vw;height:100vh;background:#fff;
+    box-shadow:-8px 0 30px rgba(0,0,0,.22);transition:right .25s ease;z-index:100;overflow-y:auto}
+.drawer.open{right:0}
+.drawer-head{position:sticky;top:0;background:linear-gradient(135deg,#0f172a,#1e293b 60%,#2563eb 140%);
+    color:#fff;padding:18px 20px;display:flex;justify-content:space-between;gap:10px;z-index:5}
+.drawer-head h2{margin:0;font-size:17px;line-height:1.35}
+.drawer-head .close{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1}
+.drawer-body{padding:20px}
+.d-img{text-align:center;background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:14px;
+    border:1px solid var(--border)}
+.d-img img{max-height:210px;max-width:100%;object-fit:contain}
+.d-img .noimg{color:#94a3b8;font-size:13px;padding:40px 0}
+.d-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.d-cell{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.d-cell .k{font-size:11px;color:var(--muted);font-weight:600}
+.d-cell .v{font-size:14px;font-weight:700;margin-top:2px;word-break:break-word}
+.d-cell.wide{grid-column:1/-1}
+.d-section{margin-top:18px}
+.d-section h4{margin:0 0 8px;font-size:13px;color:var(--ink);text-transform:uppercase;letter-spacing:.4px}
+.loc-bar{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12.5px}
+.loc-bar .lname{width:150px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.loc-bar .track{flex:1;background:#e2e8f0;border-radius:6px;height:10px;overflow:hidden}
+.loc-bar .fill{height:100%;background:linear-gradient(90deg,#2563eb,#38bdf8);border-radius:6px}
+.loc-bar .lqty{width:64px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.d-desc{font-size:13px;line-height:1.7;color:#334155;background:#f8fafc;border:1px solid var(--border);
+    border-radius:10px;padding:12px 14px;white-space:pre-wrap}
+.empty{padding:40px;text-align:center;color:var(--muted);font-size:14px}
+.loading{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;z-index:200}
+.loading.show{display:flex}
+.spinner{width:46px;height:46px;border:5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);opacity:0;pointer-events:none;transition:.2s;z-index:90}
+.overlay.show{opacity:1;pointer-events:auto}
+.err-banner{display:none;background:#fee2e2;color:#b91c1c;padding:10px 20px;font-size:13px;font-weight:600;border-bottom:1px solid #fecaca}
+.err-banner.show{display:block}
+</style>
+</head>
+<body>
+<div class="err-banner" id="errBanner"></div>
+<header class="top">
+    <h1>Odoo Product Intelligence
+        <small id="subtitle">Survitec Equipments Ltd · Odoo SaaS 19.2 · POS + Web sales analytics</small>
+    </h1>
+    <div class="header-actions">
+        <span class="conn"><span class="dot"></span><span id="connText">Connecting…</span></span>
+        <a class="btn btn-dark" href="/catalogue">Catalogue Builder</a>
+        <a class="btn btn-green" id="exportBtn" href="/export_report">Export Excel</a>
+        <button class="btn btn-blue" id="refreshBtn">↻ Refresh</button>
+    </div>
+</header>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="charts">
+    <div class="chart-card"><h3>Revenue Trend <span class="hint">last 6 months · POS + web</span></h3><div class="chart-wrap"><canvas id="cTrend"></canvas></div></div>
+    <div class="chart-card"><h3>Stock Value by Category <span class="hint">KES at cost</span></h3><div class="chart-wrap"><canvas id="cStockCat"></canvas></div></div>
+    <div class="chart-card"><h3>Defect Distribution <span class="hint">click a bar to filter</span></h3><div class="chart-wrap"><canvas id="cDefects"></canvas></div></div>
+    <div class="chart-card"><h3>Top Sellers <span class="hint">revenue last 30 days</span></h3><div class="chart-wrap"><canvas id="cTop"></canvas></div></div>
+    <div class="chart-card"><h3>ABC Classification <span class="hint">by 30d revenue</span></h3><div class="chart-wrap"><canvas id="cAbc"></canvas></div></div>
+    <div class="chart-card"><h3>Selling Price Distribution <span class="hint">KES buckets</span></h3><div class="chart-wrap"><canvas id="cPrice"></canvas></div></div>
+</div>
+
+<div class="filters">
+    <div class="filter-row">
+        <div class="filter-item" style="flex:2">
+            <label>Search</label>
+            <input id="fSearch" placeholder="name, category…">
+        </div>
+        <div class="filter-item"><label>Category</label><select id="fCategory"></select></div>
+        <div class="filter-item"><label>Location</label><select id="fLocation"></select></div>
+        <div class="filter-item"><label>Product Type</label><select id="fPtype"><option value="">All</option><option>Goods</option><option>Service</option></select></div>
+        <div class="filter-item"><label>Row Type</label><select id="fType"><option value="">All</option><option value="TEMPLATE">Templates</option><option value="VARIANT">Variants</option></select></div>
+        <div class="filter-item"><label>Status</label><select id="fStatus"><option value="">All</option><option value="GOOD">Good Only</option><option value="ISSUES">With Issues</option></select></div>
+    </div>
+    <div class="filter-row" style="margin-top:10px">
+        <div class="filter-item"><label>Issue</label><select id="fIssue"><option value="">Any issue</option></select></div>
+        <div class="filter-item"><label>ABC Class</label><select id="fAbc"><option value="">All</option><option>A</option><option>B</option><option>C</option><option>No Sales</option></select></div>
+        <div class="filter-item"><label>Min Stock</label><input id="fMinStock" type="number" placeholder="0"></div>
+        <div class="filter-item"><label>Max Stock</label><input id="fMaxStock" type="number" placeholder="any"></div>
+        <div class="filter-item"><label>Min Margin %</label><input id="fMinMargin" type="number" placeholder="10"></div>
+        <div class="filter-item"><label>&nbsp;</label><label class="chk"><input type="checkbox" id="fSales"> Only with sales</label></div>
+        <div class="filter-item"><label>&nbsp;</label><button class="btn btn-dark" id="clearBtn" style="width:100%">Clear Filters</button></div>
+    </div>
+</div>
+
+<div class="results-bar">
+    <span class="count" id="countText">Loading…</span>
+    <div class="right">
+        <label style="font-size:12px;color:var(--muted);font-weight:600">Sort by</label>
+        <select id="fSort">
+            <option value="name">Name</option>
+            <option value="revenue_30d" selected>Revenue 30d</option>
+            <option value="units_30d">Units 30d</option>
+            <option value="stock">Stock</option>
+            <option value="stock_value">Stock Value</option>
+            <option value="sell_raw">Sell Price</option>
+            <option value="buy_raw">Buy Price</option>
+            <option value="margin">Margin %</option>
+            <option value="abc_class">ABC</option>
+            <option value="status">Status</option>
+            <option value="category">Category</option>
+            <option value="create_date">Created Date</option>
+        </select>
+        <select id="fDir"><option value="desc">Desc</option><option value="asc">Asc</option></select>
+    </div>
+</div>
+
+<div class="table-wrap">
+    <div style="overflow-x:auto">
+        <table id="ptable">
+            <thead><tr id="theadRow"></tr></thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+    <div class="pager">
+        <span id="pageInfo"></span>
+        <span class="pg">
+            <button id="prevBtn">◀ Prev</button>
+            <button id="nextBtn">Next ▶</button>
+        </span>
+    </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+    <div class="drawer-head">
+        <h2 id="dTitle"></h2>
+        <button class="close" id="dClose">✕</button>
+    </div>
+    <div class="drawer-body" id="dBody"></div>
+</div>
+
+<div class="loading" id="loading"><div class="spinner"></div></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const ISSUES_ALL = ["Missing Selling Price","Missing Buying Price","Out Of Stock","Low Stock",
+    "Missing Description","Weak Description","Missing Image","Low Margin","Unpublished","Variant Price Inconsistency"];
+const state = {
+    search:"", category:"", location:"", type:"", ptype:"", status:"", issue:"",
+    abc:"", min_stock:"", max_stock:"", min_margin:"", has_sales:false,
+    sort:"revenue_30d", dir:"desc", page:1, pageSize:100,
+};
+let rows = [];
+let allOptions = {categories:[], locations:[], issues:[...ISSUES_ALL]};
+const fmtMoney = v => v == null ? "—" : "KES " + Number(v).toLocaleString("en-KE",{maximumFractionDigits:0});
+const fmtNum = v => v == null || v === "" ? "—" : Number(v).toLocaleString("en-KE",{maximumFractionDigits:1});
+const fmtPct = v => v == null ? "—" : Number(v).toFixed(1) + "%";
+const fmtDate = v => v ? String(v).slice(0,10) : "—";
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+function setErr(msg){
+    const b = $("errBanner");
+    b.textContent = msg;
+    b.classList.toggle("show", !!msg);
+}
+
+async function api(url){
+    const r = await fetch(url);
+    if(!r.ok) throw new Error(url + " -> " + r.status);
+    return r.json();
+}
+
+// ---------------- KPI ----------------
+function kpi(label, value, cls, onClick, hint){
+    const el = document.createElement("div");
+    el.className = "kpi " + (cls||"");
+    el.innerHTML = `<div class="label">${label}</div><div class="value">${value}</div>`;
+    el.title = hint || "";
+    if(onClick) el.addEventListener("click", onClick);
+    return el;
+}
+
+function renderKpis(k){
+    const box = $("kpis");
+    box.innerHTML = "";
+    box.appendChild(kpi("Products", fmtNum(k.products), "", ()=>{state.status="";state.issue="";state.abc="";reloadAll();}));
+    box.appendChild(kpi("Variants", fmtNum(k.variants), ""));
+    box.appendChild(kpi("Goods / Storable", `${fmtNum(k.goods)} / ${fmtNum(k.storable)}`, ""));
+    box.appendChild(kpi("Stock Value (cost)", fmtMoney(k.stock_value), "blue"));
+    box.appendChild(kpi("Revenue 30d", fmtMoney(k.revenue_30d), "green"));
+    box.appendChild(kpi("Avg Margin", fmtPct(k.avg_margin), "green"));
+    box.appendChild(kpi("Out of Stock", fmtNum(k.out_of_stock), "red", ()=>setIssue("Out Of Stock")));
+    box.appendChild(kpi("Low Stock", fmtNum(k.low_stock), "amber", ()=>setIssue("Low Stock")));
+    box.appendChild(kpi("Missing Prices", fmtNum(k.missing_price), "red", ()=>setIssue("Missing Selling Price")));
+    box.appendChild(kpi("Missing Images", fmtNum(k.missing_image), "red", ()=>setIssue("Missing Image")));
+    box.appendChild(kpi("Missing Descriptions", fmtNum(k.missing_desc + k.weak_desc), "amber", ()=>setIssue("Missing Description")));
+    box.appendChild(kpi("Low Margin", fmtNum(k.low_margin), "amber", ()=>setIssue("Low Margin")));
+    box.appendChild(kpi("Unpublished", fmtNum(k.unpublished), "amber", ()=>setIssue("Unpublished")));
+    box.appendChild(kpi("Clean Rows", fmtNum(k.good_rows), "green", ()=>{state.status="GOOD";state.issue="";reloadAll();}));
+    box.appendChild(kpi("Rows with Issues", fmtNum(k.issue_rows), "red", ()=>{state.status="ISSUES";state.issue="";reloadAll();}));
+}
+function setIssue(issue){
+    state.issue = issue;
+    state.status = "";
+    reloadAll();
+}
+
+// ---------------- CHARTS ----------------
+const charts = {};
+function makeChart(id, cfg){
+    if(charts[id]) charts[id].destroy();
+    const ctx = $(id).getContext("2d");
+    charts[id] = new Chart(ctx, cfg);
+}
+const PALETTE = ["#2563eb","#38bdf8","#16a34a","#f59e0b","#f97316","#dc2626","#8b5cf6","#14b8a6","#64748b","#d946ef"];
+const CHART_OPTS = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{labels:{boxWidth:10,font:{size:11},color:"#334155"}}},
+};
+
+function renderCharts(a){
+    const trend = a.sales_trend || [];
+    makeChart("cTrend", {
+        type:"line",
+        data:{
+            labels:trend.map(t=>t.month),
+            datasets:[{label:"Revenue (KES)", data:trend.map(t=>t.revenue),
+                borderColor:"#2563eb", backgroundColor:"rgba(37,99,235,.12)", fill:true, tension:.35,
+                pointRadius:4, pointBackgroundColor:"#2563eb"}],
+        },
+        options:{...CHART_OPTS, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>"K "+Math.round(v/1000)}}}},
+    });
+
+    const cats = (a.by_category||[]).slice(0,10);
+    makeChart("cStockCat", {
+        type:"bar",
+        data:{labels:cats.map(c=>c.category), datasets:[
+            {label:"Stock value", data:cats.map(c=>c.stock_value),
+             backgroundColor:PALETTE.slice(0,cats.length), borderRadius:6}],
+        },
+        options:{...CHART_OPTS, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>"K "+Math.round(v/1000)}}}},
+    });
+
+    const defs = (a.defects||[]).filter(d=>d.count>0).slice(0,9);
+    makeChart("cDefects", {
+        type:"bar",
+        data:{labels:defs.map(d=>d.name), datasets:[
+            {label:"Products", data:defs.map(d=>d.count),
+             backgroundColor:defs.map(d=>d.name.includes("Missing")||d.name.includes("Out Of")?"#dc2626":d.name.includes("Low")?"#f59e0b":"#2563eb"), borderRadius:5}],
+        },
+        options:{...CHART_OPTS, indexAxis:"y", plugins:{legend:{display:false}}, onClick:(e,els)=>{
+            if(els.length){ setIssue(defs[els[0].index].name); }
+        }},
+    });
+
+    const top = (a.top_sellers||[]).slice().reverse();
+    makeChart("cTop", {
+        type:"bar",
+        data:{labels:top.map(t=>t.name.length>34?t.name.slice(0,33)+"…":t.name), datasets:[
+            {label:"Revenue 30d", data:top.map(t=>t.revenue),
+             backgroundColor:top.map(t=>t.abc_class==="A"?"#16a34a":t.abc_class==="B"?"#f59e0b":"#2563eb"), borderRadius:5}],
+        },
+        options:{...CHART_OPTS, indexAxis:"y", plugins:{legend:{display:false}}, scales:{x:{ticks:{callback:v=>"K "+Math.round(v/1000)}}}},
+    });
+
+    const abc = a.kpis.abc || {};
+    makeChart("cAbc", {
+        type:"doughnut",
+        data:{labels:["A","B","C","No Sales"], datasets:[
+            {data:[abc.A||0, abc.B||0, abc.C||0, abc["No Sales"]||0],
+             backgroundColor:["#16a34a","#f59e0b","#dc2626","#cbd5e1"], borderWidth:2, borderColor:"#fff"}],
+        },
+        options:{...CHART_OPTS, cutout:"58%", onClick:(e,els)=>{
+            if(els.length){ const l=["A","B","C","No Sales"][els[0].index]; state.abc=l; reloadAll(); }
+        }},
+    });
+
+    const prices = a.price_dist||[];
+    makeChart("cPrice", {
+        type:"bar",
+        data:{labels:prices.map(p=>p.bucket), datasets:[
+            {label:"Products", data:prices.map(p=>p.count),
+             backgroundColor:prices.map(p=>p.bucket==="Missing"?"#dc2626":"#2563eb"), borderRadius:5}],
+        },
+        options:{...CHART_OPTS, plugins:{legend:{display:false}}},
+    });
+}
+
+// ---------------- OPTIONS ----------------
+async function loadOptions(){
+    try{
+        const o = await api("/api/options");
+        allOptions.categories = o.categories;
+        allOptions.locations = o.locations;
+        const cat = $("fCategory"), loc = $("fLocation");
+        cat.innerHTML = '<option value="">All categories</option>' + o.categories.map(c=>`<option>${esc(c)}</option>`).join("");
+        loc.innerHTML = '<option value="">All locations</option>' + o.locations.map(l=>`<option value="${l.id}">${esc(l.name)}</option>`).join("");
+        const iss = $("fIssue");
+        iss.innerHTML = '<option value="">Any issue</option>' + ISSUES_ALL.map(i=>`<option>${i}</option>`).join("");
+        $("subtitle").textContent = `Survitec Equipments Ltd · Odoo SaaS 19.2 · ${o.generated_at}`;
+    }catch(e){ setErr("Options failed: " + e.message); }
+}
+
+// ---------------- TABLE ----------------
+const COLS = [
+    {key:"#", label:"#", type:"idx", sortable:false},
+    {key:"name", label:"Name", type:"str", sortable:true},
+    {key:"type", label:"Type", type:"str", sortable:true},
+    {key:"product_type", label:"P. Type", type:"str", sortable:true},
+    {key:"category", label:"Category", type:"str", sortable:true},
+    {key:"sell_raw", label:"Sell", type:"money", sortable:true},
+    {key:"buy_raw", label:"Buy", type:"money", sortable:true},
+    {key:"margin", label:"Margin", type:"pct", sortable:true},
+    {key:"stock", label:"Stock", type:"num", sortable:true},
+    {key:"stock_value", label:"Stock Val.", type:"money", sortable:true},
+    {key:"units_30d", label:"Units 30d", type:"num", sortable:true},
+    {key:"revenue_30d", label:"Rev 30d", type:"money", sortable:true},
+    {key:"abc_class", label:"ABC", type:"abc", sortable:true},
+    {key:"published", label:"Pub", type:"str", sortable:true},
+    {key:"image", label:"Img", type:"str", sortable:true},
+    {key:"status", label:"Status", type:"status", sortable:true},
+];
+
+function buildHeader(){
+    $("theadRow").innerHTML = COLS.map(c=>{
+        if(!c.sortable) return `<th class="${c.type==="money"||c.type==="num"||c.type==="pct"?"num":""}">${c.label}</th>`;
+        const active = state.sort===c.key;
+        const arr = active ? (state.dir==="asc"?"▲":"▼") : "";
+        return `<th class="${c.type==="money"||c.type==="num"||c.type==="pct"?"num":""}" data-key="${c.key}">${c.label}<span class="arr">${arr}</span></th>`;
+    }).join("");
+    document.querySelectorAll("#theadRow th[data-key]").forEach(th=>{
+        th.addEventListener("click", ()=>{
+            const key = th.dataset.key;
+            if(state.sort===key){ state.dir = state.dir==="asc"?"desc":"asc"; }
+            else{ state.sort=key; state.dir="desc"; }
+            $("fSort").value=key; $("fDir").value=state.dir;
+            state.page=1; renderTable();
+        });
+    });
+}
+
+function defectBadges(d){
+    return (d||[]).map(x=>{
+        const cls = x.includes("Missing") || x.includes("Out Of") || x.includes("Inconsistency") ? "red"
+            : x.includes("Low") ? "amber" : "gray";
+        return `<span class="badge ${cls}">${esc(x)}</span>`;
+    }).join("");
+}
+
+function renderTable(){
+    const sortKey = state.sort, dir = state.dir==="asc"?1:-1;
+    const sorted = [...rows].sort((a,b)=>{
+        let x=a[sortKey], y=b[sortKey];
+        if(x==null)x=""; if(y==null)y="";
+        if(typeof x==="string") return x.localeCompare(y)*dir;
+        return (Number(x)-Number(y))*dir;
+    });
+    const total = sorted.length;
+    const start = (state.page-1)*state.pageSize;
+    const page = sorted.slice(start, start+state.pageSize);
+    $("countText").textContent = `${fmtNum(total)} rows · showing ${fmtNum(page.length)}`;
+    const pages = Math.max(1, Math.ceil(total/state.pageSize));
+    $("pageInfo").textContent = `Page ${state.page} of ${pages}`;
+    $("prevBtn").disabled = state.page<=1;
+    $("nextBtn").disabled = state.page>=pages;
+
+    if(!page.length){
+        $("tbody").innerHTML = `<tr><td colspan="${COLS.length}" class="empty">No products match the current filters</td></tr>`;
+        return;
+    }
+    $("tbody").innerHTML = page.map((r,i)=>{
+        let cells = COLS.map(c=>{
+            let v = r[c.key];
+            if(c.type==="idx") return `<td class="num">${start + i + 1}</td>`;
+            if(c.type==="str") return `<td>${esc(v)}${c.key==="name"&&r.variant_of?`<div class="sub">of ${esc(r.variant_of)}</div>`:""}</td>`;
+            if(c.type==="num") return `<td class="num">${fmtNum(v)}</td>`;
+            if(c.type==="money") return `<td class="money">${fmtMoney(v)}</td>`;
+            if(c.type==="pct") return `<td class="num">${fmtPct(v)}</td>`;
+            if(c.type==="abc") return `<td><span class="badge ${v==="A"?"green":v==="B"?"amber":v==="C"?"red":"gray"}">${esc(v)}</span></td>`;
+            if(c.type==="status"){
+                const good = r.status==="GOOD";
+                return `<td>${good?`<span class="status-good">GOOD</span>`:`<span class="status-issue">${esc(r.status)}</span>`}</td>`;
+            }
+            return `<td>${esc(v)}</td>`;
+        }).join("");
+        if(r.variant_count>0){
+            const nameIdx = COLS.findIndex(c=>c.key==="name");
+            cells = cells.replace(`<td>${esc(r.name)}`, `<td><strong>${esc(r.name)}</strong><div class="sub">${fmtNum(r.variant_count)} variants</div>`);
+        }
+        return `<tr data-id="${r.id}" data-type="${r.type}">${cells}</tr>`;
+    }).join("");
+
+    document.querySelectorAll("#tbody tr").forEach(tr=>{
+        tr.addEventListener("click", ()=>openDrawer(tr.dataset.id, tr.dataset.type));
+    });
+}
+
+async function loadProducts(){
+    const q = new URLSearchParams();
+    for(const k of ["search","category","location","type","ptype","status","issue","abc","min_stock","max_stock","min_margin"])
+        if(state[k]) q.set(k, state[k]);
+    if(state.has_sales) q.set("has_sales","1");
+    try{
+        rows = await api("/api/products?" + q.toString());
+        state.page = 1;
+        renderTable();
+        setErr("");
+    }catch(e){ setErr("Products failed: " + e.message); }
+}
+
+// ---------------- DRAWER ----------------
+async function openDrawer(id, type){
+    const r = rows.find(x=>x.id==id && x.type===type);
+    if(!r) return;
+    $("dTitle").innerHTML = `${esc(r.name)} <span style="font-size:12px;font-weight:400;color:#93c5fd">#${r.id} · ${r.type}</span>`;
+    const body = $("dBody");
+    body.innerHTML = `
+        <div class="d-img"><img id="dImg" alt="" style="display:none"><div class="noimg" id="dNoImg">Loading image…</div></div>
+        <div class="d-grid">
+            <div class="d-cell"><div class="k">Sell Price</div><div class="v">${fmtMoney(r.sell_raw)}</div><div class="sub">${esc(r.price_source||"")}</div></div>
+            <div class="d-cell"><div class="k">Buy Price</div><div class="v">${fmtMoney(r.buy_raw)}</div></div>
+            <div class="d-cell"><div class="k">Margin</div><div class="v">${fmtPct(r.margin)}</div></div>
+            <div class="d-cell"><div class="k">ABC Class</div><div class="v"><span class="badge ${r.abc_class==="A"?"green":r.abc_class==="B"?"amber":r.abc_class==="C"?"red":"gray"}">${esc(r.abc_class)}</span></div></div>
+            <div class="d-cell"><div class="k">Stock (on hand)</div><div class="v">${fmtNum(r.stock)}</div></div>
+            <div class="d-cell"><div class="k">Stock Value</div><div class="v">${fmtMoney(r.stock_value)}</div></div>
+            <div class="d-cell"><div class="k">Units 30d</div><div class="v">${fmtNum(r.units_30d)}</div></div>
+            <div class="d-cell"><div class="k">Revenue 30d</div><div class="v">${fmtMoney(r.revenue_30d)}</div></div>
+            <div class="d-cell"><div class="k">Units Total</div><div class="v">${fmtNum(r.units_total)}</div></div>
+            <div class="d-cell"><div class="k">Revenue Total</div><div class="v">${fmtMoney(r.revenue_total)}</div></div>
+            <div class="d-cell"><div class="k">Avg Sale Price</div><div class="v">${fmtMoney(r.avg_sale_price)}</div></div>
+            <div class="d-cell"><div class="k">Last Sale</div><div class="v">${fmtDate(r.last_sale_date)}</div></div>
+            <div class="d-cell"><div class="k">Category</div><div class="v">${esc(r.category||"—")}</div></div>
+            <div class="d-cell"><div class="k">Published / Image</div><div class="v">${r.published} / ${r.image}</div></div>
+            <div class="d-cell"><div class="k">Created</div><div class="v">${fmtDate(r.create_date)}</div></div>
+            <div class="d-cell"><div class="k">Days of Stock</div><div class="v">${r.days_of_stock==null?"—":fmtNum(r.days_of_stock)+" d"}</div></div>
+        </div>
+        <div class="d-section"><h4>Defects</h4>${r.defects.length?defectBadges(r.defects):`<span class="badge green">GOOD</span>`}</div>
+        ${r.locations&&r.locations.length?`<div class="d-section"><h4>Stock by Location</h4>${locBars(r)}</div>`:""}
+        ${r.description?`<div class="d-section"><h4>Description <span style="color:var(--muted);text-transform:none;font-size:11px">(${esc(r.description_source||"")})</span></h4><div class="d-desc">${esc(r.description)}</div></div>`:""}
+        ${r.type==="TEMPLATE"&&r.variant_count>0?`<div class="d-section"><h4>Variants</h4><div id="dVariants"></div></div>`:""}
+    `;
+    $("drawer").classList.add("open");
+    $("overlay").classList.add("show");
+    fetchImage(r.template_id || r.id);
+    if(r.type==="TEMPLATE" && r.variant_count>0) renderVariants(r.template_id || r.id);
+}
+
+function locBars(r){
+    const max = Math.max(...r.locations.map(l=>l.qty), 1);
+    return r.locations.map(l=>`
+        <div class="loc-bar">
+            <span class="lname" title="${esc(l.name)}">${esc(l.name)}</span>
+            <span class="track"><span class="fill" style="width:${Math.max(2, l.qty/max*100)}%"></span></span>
+            <span class="lqty">${fmtNum(l.qty)}</span>
+        </div>`).join("");
+}
+
+async function fetchImage(tid){
+    const img = $("dImg"), noimg = $("dNoImg");
+    try{
+        const d = await api(`/api/product_image?id=${tid}`);
+        if(d.image){ img.src = d.image; img.style.display="block"; noimg.style.display="none"; }
+        else noimg.textContent = "No image in Odoo";
+    }catch(e){ noimg.textContent = "Image unavailable"; }
+}
+
+function renderVariants(tid){
+    const vs = rows.filter(x=>x.template_id===tid && x.type==="VARIANT");
+    $("dVariants").innerHTML = vs.map(v=>`
+        <div class="d-cell" style="margin-bottom:6px">
+            <div class="k">${esc(v.name)}</div>
+            <div class="v" style="font-size:12.5px">Sell ${fmtMoney(v.sell_raw)} · Buy ${fmtMoney(v.buy_raw)} · Stock ${fmtNum(v.stock)} · Rev30d ${fmtMoney(v.revenue_30d)}</div>
+            ${defectBadges(v.defects)}
+        </div>`).join("");
+}
+
+// ---------------- EVENTS ----------------
+function reloadAll(){ loadProducts(); }
+
+$("fSearch").addEventListener("input", debounce(()=>{state.search=$("fSearch").value.trim();state.page=1;loadProducts();},300));
+["fCategory","fLocation","fPtype","fType","fStatus","fIssue","fAbc","fMinStock","fMaxStock","fMinMargin"].forEach(id=>{
+    $(id).addEventListener("change", ()=>{ state[id.slice(1)] = $(id).value; state.page=1; loadProducts(); });
+});
+$("fSales").addEventListener("change", ()=>{ state.has_sales=$("fSales").checked; state.page=1; loadProducts(); });
+$("fSort").addEventListener("change", ()=>{ state.sort=$("fSort").value; state.page=1; renderTable(); });
+$("fDir").addEventListener("change", ()=>{ state.dir=$("fDir").value; state.page=1; renderTable(); });
+$("clearBtn").addEventListener("click", ()=>{
+    Object.assign(state, {search:"",category:"",location:"",type:"",ptype:"",status:"",issue:"",abc:"",min_stock:"",max_stock:"",min_margin:"",has_sales:false});
+    $("fSearch").value=""; $("fCategory").value=""; $("fLocation").value=""; $("fPtype").value="";
+    $("fType").value=""; $("fStatus").value=""; $("fIssue").value=""; $("fAbc").value="";
+    $("fMinStock").value=""; $("fMaxStock").value=""; $("fMinMargin").value=""; $("fSales").checked=false;
+    reloadAll();
+});
+$("prevBtn").addEventListener("click", ()=>{ if(state.page>1){state.page--; renderTable();} });
+$("nextBtn").addEventListener("click", ()=>{ state.page++; renderTable(); });
+$("refreshBtn").addEventListener("click", async ()=>{
+    $("loading").classList.add("show");
+    try{
+        const a = await api("/api/analytics?refresh=1");
+        await loadOptions();
+        renderKpis(a.kpis); renderCharts(a);
+        await loadProducts();
+    }catch(e){ setErr("Refresh failed: " + e.message); }
+    $("loading").classList.remove("show");
+});
+$("exportBtn").addEventListener("click", (e)=>{
+    e.preventDefault();
+    const q = new URLSearchParams();
+    for(const k of ["search","category","location","type","ptype","status","issue","abc","min_stock","max_stock","min_margin"])
+        if(state[k]) q.set(k, state[k]);
+    if(state.has_sales) q.set("has_sales","1");
+    window.location.href = "/export_report?" + q.toString();
+});
+$("dClose").addEventListener("click", closeDrawer);
+$("overlay").addEventListener("click", closeDrawer);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeDrawer(); });
+function closeDrawer(){ $("drawer").classList.remove("open"); $("overlay").classList.remove("show"); }
+function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+
+// ---------------- BOOT ----------------
+(async function boot(){
+    buildHeader();
+    $("loading").classList.add("show");
+    try{
+        const a = await api("/api/analytics");
+        $("connText").textContent = "Connected · " + a.fetch_health.templates + " templates / " + a.fetch_health.variants + " variants";
+        await loadOptions();
+        renderKpis(a.kpis);
+        renderCharts(a);
+        await loadProducts();
+        setErr("");
+    }catch(e){
+        $("connText").textContent = "Connection error";
+        setErr("Failed to load: " + e.message);
+    }
+    $("loading").classList.remove("show");
+})();
+</script>
+</body>
+</html>

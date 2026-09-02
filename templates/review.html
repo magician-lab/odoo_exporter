@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catalogue Review</title>
+<style>
+:root{
+    --bg:#f1f5f9; --card:#fff; --ink:#0f172a; --muted:#64748b;
+    --brand:#2563eb; --green:#16a34a; --red:#dc2626; --amber:#d97706; --border:#e2e8f0;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,#eef2ff,#fff7ed 60%,#fef2f2)}
+header.top{background:#111827;color:#fff;padding:15px 24px;display:flex;justify-content:space-between;
+    align-items:center;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:50}
+header.top h2{margin:0;font-size:18px}
+.btn{border:none;border-radius:10px;padding:10px 15px;font-weight:600;cursor:pointer;font-size:13px;
+    text-decoration:none;display:inline-flex;align-items:center;gap:7px;color:#fff;transition:.15s}
+.btn:hover{opacity:.92;transform:translateY(-1px)}
+.btn-dark{background:#334155} .btn-green{background:var(--green)} .btn-red{background:var(--red)}
+.container{max-width:1500px;margin:auto;padding:22px}
+.card{background:var(--card);border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.small{font-size:12px;color:var(--muted)}
+.section-title{background:#0f172a;color:#fff;padding:13px 18px;border-radius:12px;margin:24px 0 14px;
+    font-size:16px;font-weight:700}
+.catalogue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+.product-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);
+    border:1px solid var(--border);transition:.2s;display:flex;flex-direction:column}
+.product-card:hover{transform:translateY(-3px)}
+.product-image{width:100%;height:210px;object-fit:contain;background:#f8fafc}
+.product-body{padding:15px;flex:1;display:flex;flex-direction:column}
+.product-name{font-size:16px;font-weight:700;margin-bottom:8px;color:#111827}
+.old-price{text-decoration:line-through;color:#9ca3af;font-size:13px}
+.new-price{color:var(--green);font-size:17px;font-weight:800}
+.discount{display:inline-block;margin-top:8px;background:var(--red);color:#fff;padding:4px 10px;
+    border-radius:20px;font-size:12px}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;margin:1px 2px}
+.badge.green{background:#dcfce7;color:#15803d} .badge.red{background:#fee2e2;color:#b91c1c}
+.badge.amber{background:#fef9c3;color:#a16207} .badge.gray{background:#f1f5f9;color:#475569}
+.description{margin-top:18px;padding:18px;background:#f8fafc;border:1px solid var(--border);
+    border-radius:12px;line-height:1.8;color:#374151;font-size:13.5px;text-align:justify;
+    white-space:pre-wrap}
+.description h3{margin:0 0 10px;color:#0f172a;font-size:17px;border-bottom:2px solid #e2e8f0;padding-bottom:8px}
+.controls{margin-top:14px;border-top:1px solid #eee;padding-top:14px}
+.control-group{margin-bottom:12px}
+.control-group label{display:block;margin-bottom:5px;font-size:12px;color:#475569;font-weight:600}
+input,select{width:100%;padding:9px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;outline:none}
+input:focus,select:focus{border-color:var(--brand)}
+.toggle-row{display:flex;align-items:center;gap:8px;font-size:13px}
+.toggle-row input{width:auto}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-top:14px}
+.stat{background:#f8fafc;padding:14px;border-radius:10px;text-align:center}
+.stat h2{margin:0;color:var(--brand);font-size:24px}
+.stat p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.company-about{background:#f8fafc;padding:20px;border-radius:12px;margin:18px 0;line-height:1.8;
+    font-size:14px;color:#374151}
+.logo-preview{max-height:90px} .qr-preview{max-height:90px}
+.top-images{display:flex;gap:20px;align-items:center;margin-top:14px}
+.meta-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 10px}
+@media(max-width:900px){
+    .catalogue-grid{grid-template-columns:1fr}
+    header.top{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+    <h2>📘 Catalogue Review</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-dark" onclick="continueEditing()">← Continue Editing</button>
+        <button class="btn btn-green" onclick="previewCatalogue()">👁 Preview</button>
+        <button class="btn btn-green" id="downloadBtn" onclick="downloadCatalogue()">⬇ Download PDF</button>
+    </div>
+</header>
+
+<div class="container">
+    <div class="card" id="catalogueInfo"></div>
+    <div id="sections"></div>
+</div>
+
+<script>
+let data = null;
+
+function loadData(){
+    const saved = sessionStorage.getItem("catalogue_builder");
+    if(!saved){ location.href = "/catalogue"; return; }
+    data = JSON.parse(saved);
+    initializeProducts();
+    renderInfo();
+    renderProducts();
+}
+
+function saveData(){ sessionStorage.setItem("catalogue_builder", JSON.stringify(data)); }
+
+function initializeProducts(){
+    data.selected.forEach(p=>{
+        if(p.showDescription === undefined) p.showDescription = true;
+        if(p.discount === undefined) p.discount = 0;
+        if(!p.category) p.category = "Uncategorized";
+    });
+    saveData();
+}
+
+function allCategories(){
+    return [...new Set(data.selected.map(x=>x.category || "Uncategorized"))].sort();
+}
+
+function renderInfo(){
+    const total = data.selected.length;
+    const categories = allCategories();
+    document.getElementById("catalogueInfo").innerHTML = `
+        <div class="info-grid">
+            <div><div class="small">Catalogue Title</div><b>${esc(data.title||"")}</b></div>
+            <div><div class="small">Website</div><b>${esc(data.website||"")}</b></div>
+            <div><div class="small">Contacts</div><b>${esc(data.contacts||"")}</b></div>
+        </div>
+        ${data.companyDescription ? `
+        <div class="company-about"><h3 style="margin-top:0">About Us</h3><p>${esc(data.companyDescription)}</p></div>` : ""}
+        <div class="stats-grid">
+            <div class="stat"><h2>${total}</h2><p>Total Products</p></div>
+            <div class="stat"><h2>${categories.length}</h2><p>Categories</p></div>
+        </div>
+        <div class="top-images">
+            ${data.logo ? `<img src="${data.logo}" class="logo-preview">` : ""}
+            ${data.qr ? `<img src="${data.qr}" class="qr-preview">` : ""}
+        </div>`;
+}
+
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+function stockBadge(p){
+    const s = p.stock||0;
+    if(p.type==="TEMPLATE") return `<span class="badge gray">${s} in stock</span>`;
+    if(s<=0) return `<span class="badge red">Out of stock</span>`;
+    if(s<=5) return `<span class="badge amber">Low: ${s}</span>`;
+    return `<span class="badge green">Stock: ${s}</span>`;
+}
+
+function removeProduct(index){
+    if(!confirm("Remove this product?")) return;
+    data.selected.splice(index,1);
+    saveData();
+    renderInfo();
+    renderProducts();
+}
+
+function updateDiscount(index, value){
+    data.selected[index].discount = Number(value || 0);
+    saveData();
+}
+
+function updateCategory(index, value){
+    data.selected[index].category = value;
+    saveData();
+    renderProducts();
+}
+
+function toggleDescription(index){
+    data.selected[index].showDescription = !data.selected[index].showDescription;
+    saveData();
+    renderProducts();
+}
+
+function renderProducts(){
+    const categories = allCategories();
+    let html = "";
+    categories.forEach(cat=>{
+        const items = data.selected.filter(x => (x.category||"Uncategorized") === cat);
+        html += `<div class="section-title">${esc(cat)} <span style="font-weight:400;font-size:12px;opacity:.8">(${items.length})</span></div><div class="catalogue-grid">`;
+        items.forEach(product=>{
+            const idx = data.selected.indexOf(product);
+            const sell = Number(product.sell || 0);
+            const discount = Number(product.discount || 0);
+            const oldPrice = sell + (sell * discount / 100);
+            const description = product.useSystemDesc ? (product.description || "") : (product.customDesc || "");
+            html += `
+            <div class="product-card">
+                <img class="product-image" src="${product.image_1920 || ''}" onerror="this.style.visibility='hidden'">
+                <div class="product-body">
+                    <div class="product-name">${esc(product.name)}</div>
+                    <div class="meta-row">
+                        ${stockBadge(product)}
+                        ${!description ? `<span class="badge amber">No description</span>` : ""}
+                    </div>
+                    <div class="price-block">
+                        ${discount ? `<div class="old-price">KES ${oldPrice.toLocaleString()}</div>` : ""}
+                        <div class="new-price">KES ${sell.toLocaleString()}</div>
+                        ${discount ? `<span class="discount">-${discount}%</span>` : ""}
+                    </div>
+                    ${product.showDescription && description ? `<div class="description"><h3>Product Details</h3>${esc(description)}</div>` : ""}
+                    <div class="controls">
+                        <div class="toggle-row">
+                            <input type="checkbox" ${product.showDescription?"checked":""} onchange="toggleDescription(${idx})">
+                            Show Description
+                        </div>
+                        <br>
+                        <div class="control-group">
+                            <label>Category</label>
+                            <select onchange="updateCategory(${idx}, this.value)">
+                                ${allCategories().map(c=>`<option value="${esc(c)}" ${product.category===c?"selected":""}>${esc(c)}</option>`).join("")}
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Discount %</label>
+                            <input type="number" value="${discount}" onchange="updateDiscount(${idx}, this.value)">
+                        </div>
+                        <button class="btn btn-red" onclick="removeProduct(${idx})">Remove Product</button>
+                    </div>
+                </div>
+            </div>`;
+        });
+        html += `</div>`;
+    });
+    document.getElementById("sections").innerHTML = html;
+}
+
+function continueEditing(){
+    saveData();
+    window.location.href = "/catalogue";
+}
+
+function payload(){
+    return {
+        title: data.title, website: data.website, contacts: data.contacts,
+        companyDescription: data.companyDescription || "",
+        logo: data.logo, qr: data.qr,
+        products: data.selected,
+    };
+}
+
+function previewCatalogue(){
+    fetch("/catalogue/preview", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(payload()),
+    })
+    .then(r=>r.text())
+    .then(html=>{
+        const w = window.open("");
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+    })
+    .catch(err=>{ console.error(err); alert("Preview failed."); });
+}
+
+function downloadCatalogue(){
+    const btn = document.getElementById("downloadBtn");
+    btn.disabled = true;
+    btn.innerHTML = "Generating PDF...";
+    fetch("/catalogue/download", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(payload()),
+    })
+    .then(response=>{
+        if(!response.ok) throw new Error("PDF generation failed");
+        return response.blob();
+    })
+    .then(blob=>{
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = (data.title || "catalogue").replaceAll(" ", "_") + ".pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(error=>{ console.error(error); alert("Unable to generate PDF."); })
+    .finally(()=>{
+        btn.disabled = false;
+        btn.innerHTML = "⬇ Download PDF";
+    });
+}
+
+loadData();
+</script>
+</body>
+</html>

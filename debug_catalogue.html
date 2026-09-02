@@ -1,0 +1,2210 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+
+<style>
+
+html,
+body{
+    margin:0;
+    padding:0;
+    min-height:100%;
+    font-family:'Segoe UI',sans-serif;
+
+    background:linear-gradient(
+        135deg,
+        #111827 0%,
+        #EA580C 50%,
+        #DC2626 100%
+    ) !important;
+}
+
+
+.header {
+    text-align:center;
+    border-bottom:2px solid #ddd;
+    padding-bottom:15px;
+    margin-bottom:20px;
+}
+
+.logo {
+    max-height:90px;
+}
+
+.qr {
+    max-height:100px;
+}
+
+.title {
+    font-size:28px;
+    font-weight:bold;
+}
+
+.meta {
+    color:#666;
+    margin-top:4px;
+}
+
+.category {
+    background:#111827;
+    color:white;
+    padding:10px;
+    margin-top:25px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.products-grid{
+    width:100%;
+    font-size:0;
+}
+
+.product-card{
+
+    display:inline-block;
+
+    width:30%;
+
+    margin:1%;
+
+    vertical-align:top;
+
+    font-size:12px;
+
+    border:1px solid #ddd;
+
+    border-radius:10px;
+
+    padding:12px;
+
+    box-sizing:border-box;
+}
+
+
+.img-small{
+
+    width:120px;
+    height:120px;
+
+    object-fit:contain;
+}
+
+.img-medium{
+
+    width:180px;
+    height:180px;
+
+    object-fit:contain;
+}
+
+.company-profile{
+
+    margin:25px 0;
+
+    padding:25px;
+
+    background:#f8fafc;
+
+    border-left:6px solid #D4AF37;
+
+    border-radius:12px;
+
+    line-height:1.8;
+
+    font-size:13px;
+
+    color:#374151;
+}
+
+.company-profile h2{
+
+    margin:0 0 15px 0;
+
+    color:#111827;
+
+    font-size:22px;
+}
+
+.company-profile p{
+
+    margin:0;
+
+    white-space:pre-wrap;
+
+    text-align:justify;
+}
+
+.img-large{
+
+    width:240px;
+    height:240px;
+
+    object-fit:contain;
+}
+
+.product-name{
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    margin-top:10px;
+}
+
+.old-price{
+
+    text-decoration:line-through;
+
+    color:#888;
+
+    margin-top:10px;
+}
+
+.new-price{
+
+    color:green;
+
+    font-size:18px;
+
+    font-weight:bold;
+}
+
+.discount{
+
+    display:inline-block;
+
+    margin-top:8px;
+
+    background:red;
+
+    color:white;
+
+    padding:4px 10px;
+
+    border-radius:20px;
+}
+
+.description{
+
+    margin-top:25px;
+
+    padding:25px;
+
+    background:#ffffff;
+
+    border:1px solid #e5e7eb;
+
+    border-radius:14px;
+
+    line-height:1.9;
+
+    color:#374151;
+
+    font-size:15px;
+
+    text-align:justify;
+
+    box-shadow:
+    0 4px 12px rgba(0,0,0,.06);
+
+    white-space:pre-wrap;
+}
+
+.description h3{
+
+    margin-top:0;
+
+    margin-bottom:15px;
+
+    color:#0f172a;
+
+    font-size:22px;
+
+    border-bottom:2px solid #f3f4f6;
+
+    padding-bottom:10px;
+}
+.company-description{
+
+    max-width:900px;
+
+    margin:20px auto;
+
+    padding:15px;
+
+    background:#f8fafc;
+
+    border-left:5px solid #D4AF37;
+
+    line-height:1.8;
+
+    font-size:13px;
+
+    text-align:left;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+        <img src="data:image/png;base64,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" class="logo">
+        <br>
+        
+    <div class="title">
+        SURVITEC EQUIPMENTS LTD
+    </div>
+
+    <div class="meta">
+        https://www.survitec.co.ke
+    </div>
+
+    <div class="meta">
+        +254115597743
+
+
+        <br>
+        <img src="data:image/png;base64,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" class="qr">
+        
+    </div>
+
+        <div class="company-profile">
+
+            <h2>
+                About Us
+            </h2>
+
+            <p>
+                Survitec is a leading supplier of tools, machines, and equipment in Kenya and the East African region, serving businesses, DIY enthusiasts, and professionals in different industries. From 3D printing materials to precision woodworking tools and heavy-duty metalworking machines, we provide solutions that meet your custom, real-world demands.
+
+At Survitec, we understand the importance of quality materials in every successful project. That's why we are always dedicated to supplying high-performance, durable products that deliver consistent results. Located at the heart of Nairobi City, Kenya, we specialise in 3D printing materials, woodworking machines, metalworking tools, and quality power tools engineered for durability and performance.
+
+Whether you are in the market for the best 3D printing filament price, advanced metalworking machines, or premium carpentry tools and equipment, we have the solution to all your needs.
+            </p>
+
+        </div>
+    
+        <div class="category">
+            3D Printing
+        </div>
+
+        <div class="products-grid">
+        
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/2fe20d35-c074-415c-a07f-d21425862561.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Creality Ender-3 V3 3D Printer
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 55,640.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 52,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -7%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/4b6c7279-2963-44ad-b8cd-abe512a4a58c.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        PETG
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,997.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,700.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -11%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/9af77048-2936-4aac-87d0-665d8780f7d5.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Luminous PLA Basic
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 3,210.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 3,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -7%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/0a69446e-da5f-4d92-9064-55eae5f3093f.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        PLA +
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 3,240.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 3,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -8%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/bd51d9e2-00b5-472d-bf17-44bba46cb871.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        ABS Carbon Fiber 3D Printing Filament
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 4,320.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 4,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -8%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/86cb5d16-1f3d-4d70-bcbe-6ed98e3d295b.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        ASA 3D Printing Filament
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 4,320.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 4,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -8%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/2dbf91e2-3a79-47c5-b953-d21307188709.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        ABS Pro Resin Black
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 3,745.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 3,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -7%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/7376a5e4-7e00-4470-bc54-15d44b5fd277.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        3D Printing Pen Black
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,507.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,300.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -9%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/7efa0a9f-e639-4d1f-9021-6141f26bd7be.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        3D Printing Nozzles
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 218.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 200.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -9%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/b0c3d783-8a6e-452f-8139-fa0ae51bf027.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        ABS Filament
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,996.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,800.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -7%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/6cff4fc3-526d-476b-a1c8-e954c49a7ea1.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Matte PLA Filament
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 3,210.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 3,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -7%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/dce0ebb3-af92-4612-9102-9f35a4f15730.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Marble PLA Basic
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 3,815.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 3,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -9%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+        </div>
+        
+        <div class="category">
+            Woodworking
+        </div>
+
+        <div class="products-grid">
+        
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/ba7e2b42-f7a5-4560-bab0-484bb8ae2059.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        TPU Filaments
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 3,456.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 3,200.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -8%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/f83d77ee-764e-4de1-ba1c-102c01762b7e.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        12" speed square
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,420.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,200.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -10%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/cb1f97f6-f3b4-4d21-9069-a72615280721.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        7" Speed Square
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 1,610.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 1,400.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -15%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/4bb5023b-3426-41cd-a971-9b5a9016e41c.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        3 in 1 Dowel Hole Jig set
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 7,670.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 6,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -18%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/6a11fbc2-d535-4698-8f41-7159a8e041b2.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        90 Degrees Red Corner Clamps fixture
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 862.50
+                    </div>
+
+                    <div class="new-price">
+                        KES 750.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -15%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/1c90ba95-4021-45eb-ad99-f86c4c7654c7.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Angle Corner Clamps
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,255.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,050.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -10%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/cbf75689-8406-469a-8614-c49d9ccb1aaa.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Double Handle Corner Clamps
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,912.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,600.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -12%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/4459c509-f12a-4cbf-8091-fb5762515cad.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        15Pc Router Bit Set
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,900.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -16%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/236fd7c3-df26-4f04-a47f-7a715260bd29.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Router Lift
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 10,735.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 9,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -13%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/43085603-28bb-4be3-92aa-ea36f3f40dab.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        7pc Mini Circular Saw Blades
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 1,110.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 1,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -11%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/dd5b9cad-b611-42ed-80f0-a23537d750e5.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Countersink  Drill Bits with Stoper
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 896.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 800.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -12%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/b23a5b80-9c44-4dfe-8189-51b081dae943.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        5pcs Counter Sink Drill Bits 2.8-4.0mm
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 1,904.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 1,700.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -12%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/21d01b91-1c4f-44a1-9592-5f9c706eefab.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        3/4" Pipe Clamp With Stand
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,775.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -11%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/0f822d0b-bba8-46df-933c-a1d7735ee313.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        3/4'' Pipe Clamp without stand
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,442.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,200.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -11%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/74e47d33-483d-407d-9788-1f2854133c23.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Angle Grinder Stand with Sliding Mechanism
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 6,272.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 5,600.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -12%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/42d69ceb-40e3-4768-a5bc-87643db3bf38.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Capenter's Pencil With Graphite
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 1,090.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 1,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -9%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/76df2c61-452e-4d8b-8da7-53b28386185c.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        150MM Plastic Manual Vernier Caliper
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 1,090.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 1,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -9%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+        </div>
+        
+        <div class="category">
+            Metal Working
+        </div>
+
+        <div class="products-grid">
+        
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/17457a8f-5023-4721-81c5-08ca27f659ee.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        15L CO2 Cylinder with Gas
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 18,600.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 15,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -20%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/8c3aa1ba-69f2-411d-8852-beddde556acf.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Argon cylinder with gas (14L)
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 17,850.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 15,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -19%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/120ceaba-1d3a-4905-a45f-4425eeafb8be.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Argon Gas Cylinder with Gas(40 Liters)
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 43,560.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 36,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -21%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/9eba7365-8c68-4d1e-8ad1-93600a83b7b0.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Male Argon Regulator
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 6,105.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 5,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -11%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/52d80d3f-2591-487e-bd33-2b02c3ea9496.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        0.8mm 1kg Flux Cored Mig Wire (Gasless)
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,775.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -11%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/44da5c45-08b3-4f98-a140-f61f2912cce0.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        0.8mm/1kg Copper Coated Mig Wire
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,750.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -10%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/69499784-0eac-483a-a67b-eb6873d544d0.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        0.8mm/20kg Copper Coated Mig Wire
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 16,605.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 13,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -23%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/620a34c4-b06c-4a8e-ae6c-efc0692e5c33.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        0.8mm/5kg Copper Coated Mig Wire
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 4,760.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 4,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -19%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/0fe0da24-039d-40df-8a8f-944d49cd7199.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        0.8mm/5kg Flux Cored Mig Wire
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 4,680.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 4,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -17%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/2805f110-aed8-4847-8b6e-b791668579d3.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        1.0 mm 1kg Flux Cored Mig Wire (Gasless)
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,825.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -13%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/156bf287-c88f-4e46-a651-1c25dd3ee531.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        NBC 270A 2in1 MIG welding Machine
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 35,698.81
+                    </div>
+
+                    <div class="new-price">
+                        KES 29,999.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -19%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/185adc44-2c2f-45f3-974d-9dae297913d0.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        MMA 250A Welding Machine
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 19,550.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 17,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -15%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/221918b6-2f1d-431b-968e-4a929eb3e723.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        10" 2 Jaw Self-Centering Lathe Chuck
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 33,320.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 28,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -19%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/5483af07-7362-492a-9b83-3937964fa10c.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        12" 4 Jaw Independent Lathe Chuck
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 58,860.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 54,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -9%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/59163bcf-2319-4b05-a1cf-62fe0af6a2fc.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Drill Holder
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 5,600.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 5,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -12%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/e88776d7-2bbd-40e9-be4c-f993b714bbb2.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        1200w Table Metr Saw
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 31,920.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 28,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -12%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/8ff892a8-dde2-4ca4-af33-7a1dd7173940.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        10 pc Carbide Rorary Burr
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,180.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -9%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/7b722434-5ba6-4d31-bba9-afe9e3d63954.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        71 Pcs Pneumatic Kit Set
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 17,985.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 16,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -9%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/d42d5ec6-67ce-41b7-8f9b-cf9d88d8b4e1.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        6pc Flat Wood Bits
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 972.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 900.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -8%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/e1227960-7a09-459b-8461-9dbf7ebd6374.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        41pc Air Impact tool kit
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 16,095.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 14,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -11%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/1c691945-7f82-42c9-a1e2-d29c3112bbbc.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        150MM Steel Manual Vernier Caliper
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,850.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -14%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/5dbeb611-ec4c-4a24-b27d-a2622ad62ae4.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Autodarkening Welding Mask Helmet (Black)
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 1,998.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 1,800.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -11%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/48326945-c7e8-4e7e-aad7-b9db97edf48d.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Autodarkening Welding Mask Helmet (Gravity)
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,120.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -6%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/65451784-c81f-4ce8-aa43-105161a0fa31.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Electric Rivet Adapter (black)
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,464.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,200.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -12%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/1e2cdd2e-ea89-4fba-9c60-d5b8df04ddd4.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        32 PC Metric Tap and Die Set
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 4,440.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 4,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -11%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/1a460ab1-5874-4f40-b9b2-de1c6810857f.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Magnetic Screw Driver
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 848.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 800.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -6%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/c8e85b63-e3f2-43da-b586-828c92d7eaf2.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Auto Darkening Welding Goggles
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,226.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,100.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -6%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+        </div>
+        
+        <div class="category">
+            Uncategorized
+        </div>
+
+        <div class="products-grid">
+        
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/45698be3-1c6e-4c9b-805b-6798a01925db.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Price Gun Label Sticker Blue
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 1,635.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 1,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -9%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/90f2705c-0a62-4086-a449-10760c23c259.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        300mm Digital Angle Ruler
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 2,700.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 2,500.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -8%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+            <div class="product-card">
+
+                <img
+                src="file:///C:/Users/KEPHA/Desktop/odoo_exporter/temp_catalogue_images/d02dab4e-2d5b-45ea-a1a2-239381a6a8e8.png"
+                class="img-medium">
+
+                
+                    <div class="product-name">
+                        Digital Depth Gauge
+                    </div>
+                    
+
+                
+                    <div class="old-price">
+                        KES 4,360.00
+                    </div>
+
+                    <div class="new-price">
+                        KES 4,000.00
+                    </div>
+                    
+
+                
+                    <span class="discount">
+                        -9%
+                    </span>
+                    
+
+                
+
+            </div>
+            
+        </div>
+        

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: odoo-exporter
+    runtime: python
+    buildCommand: pip install -r requirements.txt && apt-get update && apt-get install -y wkhtmltopdf
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 4 --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: ODOO_URL
+        sync: false
+      - key: ODOO_DB
+        sync: false
+      - key: ODOO_USERNAME
+        sync: false
+      - key: ODOO_API_KEY
+        sync: false

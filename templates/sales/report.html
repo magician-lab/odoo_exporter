@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales Reports</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+    --bg:#f1f5f9; --card:#ffffff; --ink:#0f172a; --muted:#64748b;
+    --brand:#2563eb; --brand-dark:#1d4ed8; --green:#16a34a; --red:#dc2626;
+    --amber:#d97706; --border:#e2e8f0;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header.top{
+    background:linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#2563eb 130%);
+    color:#fff;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;
+    gap:16px;flex-wrap:wrap;
+}
+header.top h1{margin:0;font-size:22px;letter-spacing:.3px}
+header.top h1 small{display:block;font-size:12px;font-weight:400;color:#94a3b8;margin-top:3px}
+.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.header-actions select{
+    padding:10px 12px;border:1px solid rgba(255,255,255,.25);border-radius:10px;font-size:13px;
+    background:#1e293b;color:#fff;font-weight:600;outline:none;font-family:inherit;cursor:pointer;
+}
+.btn{border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;
+    font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:.15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.btn-blue{background:var(--brand);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.conn{display:flex;align-items:center;gap:7px;font-size:12px;color:#a5f3fc;background:rgba(0,0,0,.25);
+    padding:7px 12px;border-radius:20px}
+.conn .dot{width:9px;height:9px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80}
+.conn.off .dot{background:#f87171;box-shadow:0 0 8px #f87171}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;padding:22px 28px 6px}
+.kpi{background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.07);
+    border:1px solid var(--border);border-top:3px solid var(--brand)}
+.kpi .icon{font-size:18px}
+.kpi .value{font-size:24px;font-weight:800;margin-top:2px;color:var(--ink);font-variant-numeric:tabular-nums}
+.kpi .label{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:2px}
+.kpi.green{border-top-color:var(--green)} .kpi.green .value{color:var(--green)}
+.kpi.red{border-top-color:var(--red)} .kpi.red .value{color:var(--red)}
+.kpi.amber{border-top-color:var(--amber)} .kpi.amber .value{color:var(--amber)}
+.kpi.purple{border-top-color:#7c3aed} .kpi.purple .value{color:#7c3aed}
+
+.charts{display:grid;grid-template-columns:2fr 1fr;gap:14px;padding:20px 28px}
+@media(max-width:900px){.charts{grid-template-columns:1fr}}
+.chart-card{background:var(--card);border-radius:14px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.07);
+    border:1px solid var(--border)}
+.chart-card h3{margin:0 0 10px;font-size:14px;color:var(--ink);display:flex;justify-content:space-between;align-items:center}
+.chart-card h3 .hint{font-size:11px;color:var(--muted);font-weight:500}
+.chart-wrap{position:relative;height:260px}
+
+.filters{background:var(--card);border-radius:14px;padding:16px 20px;margin:6px 28px 14px;
+    box-shadow:0 1px 3px rgba(0,0,0,.07);border:1px solid var(--border)}
+.filter-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.filter-item{flex:1;min-width:180px}
+.filter-item label{font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px}
+.filter-item input,.filter-item select{width:100%;padding:9px 11px;border:1px solid var(--border);
+    border-radius:9px;font-size:13px;outline:none;background:#fff;font-family:inherit}
+.filter-item input:focus,.filter-item select:focus{border-color:var(--brand)}
+
+.results-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:2px 28px 10px;flex-wrap:wrap}
+.results-bar .count{font-size:13px;color:var(--muted);font-weight:600}
+
+.table-wrap{background:var(--card);border-radius:14px;margin:0 28px 30px;overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.07);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#1e293b;color:#fff;text-align:left;padding:11px 12px;font-size:12px;
+    font-weight:600;cursor:pointer;user-select:none;white-space:nowrap}
+thead th:hover{background:#334155}
+thead th .arr{font-size:10px;color:#93c5fd;margin-left:4px}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tbody tr:hover{background:#eff6ff}
+tbody tr:nth-child(even){background:#f8fafc}
+tbody tr:nth-child(even):hover{background:#eff6ff}
+td.num,th.num{text-align:right}
+td.money{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td .sub{font-size:11px;color:var(--muted)}
+.prod-name{font-weight:600}
+.expand-btn{background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted);width:22px;height:22px;line-height:1}
+tr.detail-row td{background:#f8fafc;padding:0}
+.detail-body{display:none;padding:16px 20px}
+tr.detail-row.open .detail-body{display:block}
+.bd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.bd-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.bd-date{max-height:340px;overflow-y:auto}
+.bd-date thead th{position:sticky;top:0;background:#fff;z-index:1}
+tr.detail-row{display:none}
+tr.detail-row.open{display:table-row}
+.bd-card h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+.bd-card table{font-size:12px}
+.bd-card th{background:transparent;color:var(--muted);font-weight:600;padding:5px 8px;cursor:default;white-space:nowrap}
+.bd-card td{padding:5px 8px;border-bottom:1px solid #f1f5f9;background:#fff}
+.mini-bar{height:8px;border-radius:6px;background:linear-gradient(90deg,#2563eb,#38bdf8);min-width:2px}
+.bar-cell{width:110px}
+.ch-pill{display:inline-block;padding:5px 11px;border-radius:14px;font-size:12px;font-weight:700;margin:2px 6px 2px 0;white-space:nowrap}
+.ch-pill.pos{background:#dbeafe;color:#1d4ed8}
+.ch-pill.so{background:#dcfce7;color:#15803d}
+.variant-row{display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px solid #f1f5f9;font-size:12.5px}
+.variant-row:last-child{border-bottom:none}
+.variant-row .vname{color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge.gray{background:#f1f5f9;color:#475569}
+.badge.blue{background:#dbeafe;color:#1d4ed8}
+
+.pager{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+.pager .pg{display:flex;gap:8px;align-items:center}
+.pager button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 12px;
+    cursor:pointer;font-size:13px;font-weight:600;color:var(--ink)}
+.pager button:disabled{opacity:.4;cursor:default}
+.pager button:hover:not(:disabled){background:var(--brand);color:#fff;border-color:var(--brand)}
+.empty{padding:40px;text-align:center;color:var(--muted);font-size:14px}
+.loading{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;z-index:200}
+.loading.show{display:flex}
+.spinner{width:46px;height:46px;border:5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-banner{display:none;background:#fee2e2;color:#b91c1c;padding:10px 20px;font-size:13px;font-weight:600;border-bottom:1px solid #fecaca}
+.err-banner.show{display:block}
+</style>
+</head>
+<body>
+<div class="err-banner" id="errBanner"></div>
+<header class="top">
+    <h1>Sales Reports
+        <small>Survitec Equipments Ltd · Monthly product sales · POS + Web orders (Odoo SaaS 19.2)</small>
+    </h1>
+    <div class="header-actions">
+        <span class="conn" id="connBadge"><span class="dot"></span><span id="connText">Loading…</span></span>
+        <select id="monthSelect" title="Filter by month"></select>
+        <a class="btn btn-green" id="exportBtn" href="/api/export">CSV Export</a>
+        <button class="btn btn-blue" id="refreshBtn">↻ Refresh</button>
+    </div>
+</header>
+
+<div class="loading" id="loading"><div class="spinner"></div></div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="charts">
+    <div class="chart-card">
+        <h3>Monthly Revenue Trend <span class="hint">KES · all months</span></h3>
+        <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+        <h3>Channel Split <span class="hint">selected month</span></h3>
+        <div class="chart-wrap"><canvas id="channelChart"></canvas></div>
+    </div>
+</div>
+
+<div class="filters">
+    <div class="filter-row">
+        <div class="filter-item">
+            <label>Search product</label>
+            <input type="text" id="searchInput" placeholder="Type to filter products…">
+        </div>
+    </div>
+</div>
+
+<div class="results-bar">
+    <div class="count" id="resultCount">–</div>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th class="expand-col"></th>
+                <th data-key="name">Product <span class="arr"></span></th>
+                <th data-key="category">Category <span class="arr"></span></th>
+                <th class="num" data-key="units">Units <span class="arr"></span></th>
+                <th class="num" data-key="revenue">Revenue <span class="arr"></span></th>
+                <th class="num" data-key="avg_price">Avg Price <span class="arr"></span></th>
+                <th class="num" data-key="orders">Orders <span class="arr"></span></th>
+                <th data-key="last_sale">Last Sale <span class="arr"></span></th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+    <div class="empty" id="emptyState" style="display:none">No sales in the selected month.</div>
+    <div class="pager" id="pager">
+        <span id="pageInfo"></span>
+        <div class="pg">
+            <button id="prevBtn">← Prev</button>
+            <button id="nextBtn">Next →</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let STATE = { rows: [], sortKey: 'revenue', sortDir: -1, page: 1, pageSize: 25, search: '', month: '' };
+let trendChart = null, channelChart = null;
+
+const $ = id => document.getElementById(id);
+const fmtMoney = v => 'KES ' + new Intl.NumberFormat('en-KE', { maximumFractionDigits: 0 }).format(Math.round(v || 0));
+const fmtNum = v => new Intl.NumberFormat('en-KE', { maximumFractionDigits: 0 }).format(v || 0);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function showError(msg) {
+    $('errBanner').textContent = msg;
+    $('errBanner').classList.add('show');
+    const b = $('connBadge');
+    b.classList.add('off');
+    $('connText').textContent = 'Error';
+}
+
+async function loadSales(refresh) {
+    $('loading').classList.add('show');
+    $('errBanner').classList.remove('show');
+    try {
+        const qs = new URLSearchParams({ month: STATE.month });
+        if (refresh) qs.set('refresh', '1');
+        const res = await fetch('/api/sales?' + qs.toString());
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        render(data);
+        $('connBadge').classList.remove('off');
+        $('connText').textContent = 'Connected · ' + (data.fetch_health?.lines || 0) + ' sale lines';
+    } catch (e) {
+        showError('Failed to load sales data: ' + e.message);
+    } finally {
+        $('loading').classList.remove('show');
+    }
+}
+
+function render(data) {
+    if (data.months && data.months.length) {
+        const sel = $('monthSelect');
+        const prev = sel.value;
+        sel.innerHTML = '<option value="all">All Time</option>' +
+            data.months.map(m => `<option value="${m}">${m}</option>`).join('');
+        sel.value = data.month;
+    }
+    STATE.month = data.month;
+    $('exportBtn').href = '/api/export?month=' + encodeURIComponent(data.month);
+    STATE.rows = data.products;
+
+    renderKpis(data.kpis);
+    renderCharts(data);
+    applyTableState();
+}
+
+function renderKpis(k) {
+    $('kpis').innerHTML = `
+        <div class="kpi green"><div class="icon">💵</div><div class="value">${fmtMoney(k.revenue)}</div><div class="label">Revenue (${STATE.month === 'all' ? 'All Time' : STATE.month})</div></div>
+        <div class="kpi"><div class="icon">📦</div><div class="value">${fmtNum(k.units)}</div><div class="label">Units Sold</div></div>
+        <div class="kpi red"><div class="icon">🧾</div><div class="value">${fmtNum(k.orders)}</div><div class="label">Orders</div></div>
+        <div class="kpi amber"><div class="icon">🏷️</div><div class="value">${fmtNum(k.products)}</div><div class="label">Products Sold</div></div>
+        <div class="kpi purple"><div class="icon">🎯</div><div class="value">${fmtMoney(k.avg_order_value)}</div><div class="label">Avg Order Value</div></div>
+        <div class="kpi"><div class="icon">🗂️</div><div class="value">${fmtNum(k.categories)}</div><div class="label">Categories</div></div>`;
+}
+
+function renderCharts(data) {
+    const labels = data.monthly_trend.map(t => t.month);
+    const ctx1 = $('trendChart').getContext('2d');
+    if (trendChart) trendChart.destroy();
+    trendChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Revenue (KES)',
+                data: data.monthly_trend.map(t => t.revenue),
+                backgroundColor: '#2563eb', borderRadius: 6, maxBarThickness: 42,
+            }],
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false },
+                tooltip: { callbacks: { label: c => ' ' + fmtMoney(c.parsed.y) } } },
+            scales: { y: { ticks: { callback: v => Math.round(v / 1000) + 'K' } } },
+        },
+    });
+
+    const ctx2 = $('channelChart').getContext('2d');
+    if (channelChart) channelChart.destroy();
+    const colors = ['#2563eb', '#16a34a', '#d97706', '#7c3aed', '#dc2626'];
+    channelChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: data.channels.map(c => c.name),
+            datasets: [{ data: data.channels.map(c => c.revenue), backgroundColor: colors }],
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' },
+                tooltip: { callbacks: { label: c => ` ${c.label}: ${fmtMoney(c.parsed)}` } } },
+        },
+    });
+}
+
+function filteredRows() {
+    const s = STATE.search.trim().toLowerCase();
+    if (!s) return STATE.rows;
+    return STATE.rows.filter(r =>
+        r.name.toLowerCase().includes(s) || r.category.toLowerCase().includes(s));
+}
+
+function applyTableState() {
+    const rows = filteredRows();
+    STATE.page = Math.max(1, Math.min(STATE.page, Math.ceil(rows.length / STATE.pageSize) || 1));
+    $('resultCount').textContent = `${rows.length} product${rows.length === 1 ? '' : 's'} with sales${STATE.month === 'all' ? ' (all time)' : ' in ' + STATE.month}`;
+    renderTable();
+}
+
+function renderTable() {
+    const rows = filteredRows().slice().sort((a, b) => {
+        const va = a[STATE.sortKey], vb = b[STATE.sortKey];
+        if (va == null) return 1;
+        if (vb == null) return -1;
+        return (typeof va === 'string' ? va.localeCompare(vb) : va - vb) * STATE.sortDir;
+    });
+    const total = rows.length;
+    const pages = Math.ceil(total / STATE.pageSize) || 1;
+    const start = (STATE.page - 1) * STATE.pageSize;
+    const pageRows = rows.slice(start, start + STATE.pageSize);
+
+    $('emptyState').style.display = pageRows.length ? 'none' : 'block';
+    $('pager').style.display = pageRows.length ? 'flex' : 'none';
+    $('pageInfo').textContent = `${start + 1}–${start + pageRows.length} of ${total}`;
+    $('prevBtn').disabled = STATE.page <= 1;
+    $('nextBtn').disabled = STATE.page >= pages;
+
+    document.querySelectorAll('thead th[data-key]').forEach(th => {
+        const key = th.dataset.key;
+        th.querySelector('.arr').textContent = key === STATE.sortKey ? (STATE.sortDir === -1 ? '▼' : '▲') : '';
+    });
+
+    $('tableBody').innerHTML = pageRows.map((r, i) => `
+        <tr class="main-row" data-key="${esc(r.key)}">
+            <td><button class="expand-btn" title="Breakdown">▸</button></td>
+            <td><span class="prod-name">${esc(r.name)}</span>
+                ${r.template_id ? `<span class="sub"> · tmpl ${r.template_id}</span>` : ''}</td>
+            <td>${esc(r.category)}</td>
+            <td class="num">${fmtNum(r.units)}</td>
+            <td class="money">${fmtMoney(r.revenue)}</td>
+            <td class="money">${r.avg_price != null ? fmtMoney(r.avg_price) : '–'}</td>
+            <td class="num">${r.orders}</td>
+            <td>${esc(r.last_sale || '')}</td>
+        </tr>
+        <tr class="detail-row" data-detail="${esc(r.key)}">
+            <td colspan="8"><div class="detail-body">
+                <div class="bd-grid">
+                    <div class="bd-card">
+                        <h5>Monthly breakdown (all history)</h5>
+                        <table>
+                            <thead><tr><th>Month</th><th>Units</th><th class="num">Revenue</th></tr></thead>
+                            <tbody>
+                            ${r.monthly_breakdown.map(mb => `
+                                <tr>
+                                    <td>${esc(mb.month)}</td>
+                                    <td>${fmtNum(mb.units)}</td>
+                                    <td class="num">${fmtMoney(mb.revenue)}</td>
+                                </tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bd-card">
+                        <h5>Channel breakdown (${STATE.month === 'all' ? 'all time' : STATE.month})</h5>
+                        ${r.channel_breakdown.map(cb => `
+                            <span class="ch-pill ${cb.name === 'POS' ? 'pos' : 'so'}">
+                                ${esc(cb.name)} · ${fmtNum(cb.units)} u · ${fmtMoney(cb.revenue)}</span>`).join('') || '<span class="badge gray">—</span>'}
+                        <h5 style="margin-top:14px">Variants sold (${STATE.month === 'all' ? 'all time' : STATE.month})</h5>
+                        ${r.variants.slice(0, 8).map(v => `
+                            <div class="variant-row">
+                                <span class="vname">${esc(v.name)}</span>
+                                <span class="sub">${fmtNum(v.units)} u</span>
+                                <span class="sub">${fmtMoney(v.revenue)}</span>
+                            </div>`).join('') || '<span class="badge gray">—</span>'}
+                    </div>
+                    <div class="bd-card bd-date">
+                        <h5>Sales by date (${STATE.month === 'all' ? 'all time' : STATE.month})</h5>
+                        <table>
+                            <thead><tr><th>Date</th><th>Product</th><th class="num">Units</th><th class="num">Revenue</th></tr></thead>
+                            <tbody>
+                            ${r.sales_by_date.map(sd => `
+                                <tr>
+                                    <td>${esc(sd.date)}</td>
+                                    <td>${esc(sd.product)}</td>
+                                    <td class="num">${fmtNum(sd.units)}</td>
+                                    <td class="num">${fmtMoney(sd.revenue)}</td>
+                                </tr>`).join('') || '<tr><td colspan="4" class="sub">No lines in this period</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div></td>
+        </tr>`).join('');
+}
+
+$('tableBody').addEventListener('click', e => {
+    const btn = e.target.closest('.expand-btn');
+    if (!btn) return;
+    const row = btn.closest('tr');
+    const detail = row.nextElementSibling;
+    if (!detail || !detail.classList.contains('detail-row')) return;
+    const open = detail.classList.toggle('open');
+    btn.textContent = open ? '▾' : '▸';
+});
+
+document.querySelectorAll('thead th[data-key]').forEach(th => {
+    th.addEventListener('click', () => {
+        const key = th.dataset.key;
+        if (STATE.sortKey === key) STATE.sortDir *= -1;
+        else { STATE.sortKey = key; STATE.sortDir = key === 'name' || key === 'category' ? 1 : -1; }
+        STATE.page = 1;
+        renderTable();
+    });
+});
+
+$('searchInput').addEventListener('input', e => { STATE.search = e.target.value; STATE.page = 1; renderTable(); });
+$('prevBtn').addEventListener('click', () => { STATE.page--; renderTable(); });
+$('nextBtn').addEventListener('click', () => { STATE.page++; renderTable(); });
+$('refreshBtn').addEventListener('click', () => { STATE.month = $('monthSelect').value; loadSales(true); });
+$('monthSelect').addEventListener('change', () => { STATE.month = $('monthSelect').value; STATE.page = 1; loadSales(); });
+
+loadSales();
+</script>
+</body>
+</html>
